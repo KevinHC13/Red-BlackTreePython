@@ -108,9 +108,34 @@ class MainWindow(QMainWindow):
     # print(bst.root.left)
         layout = QVBoxLayout()
         layout.addWidget(self.GC)
+
+        lable_nodes_list = QLabel("Lista de enteros(separados por comas): ")
+        self.input_nodes_list = QLineEdit() 
+		
+		# Creamos la expresión regular para permitir solo números y comas
+        regex = QRegExp("-?[0-9]+")
+        
+		# Creamos el validador y lo asignamos al QLineEdit
+        validator = QRegExpValidator(regex)
+        self.input_nodes_list.setValidator(validator)
+        botton_start = QPushButton("Start")
+        HBox_nodes_list = QHBoxLayout()
+        HBox_nodes_list.addWidget(lable_nodes_list)
+        HBox_nodes_list.addWidget(self.input_nodes_list)
+        layout.addLayout(HBox_nodes_list)
+        layout.addWidget(botton_start)
+
         widget = QWidget()
         widget.setLayout(layout)
         self.setCentralWidget(widget)
+        botton_start.clicked.connect(self.read_list)
+    
+    def read_list(self):
+        value = int(self.input_nodes_list.text())
+        self.GC.Tree_1.insertNode(value)
+        self.GC.Tree_1.set_positions()
+        self.GC.update_draw()
+
 
 # Define R-B Tree
 
