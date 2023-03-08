@@ -6,6 +6,9 @@ from PyQt5.QtCore import Qt, QRect, QPoint, QTimer
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
+import time
+
+trees_list = []
 
 
 # Define Node
@@ -28,13 +31,13 @@ class AppDemo(QWidget):
         super().__init__()
         self.tree = None
 
-        self.Tree_1 = RBTree()
+        #self.Tree_1 = RBTree()
 
         # valueue = [5,3,6,4,2,1,8,7,9]
         # self.Tree_1.fill_tree(valueue)
         # self.Tree_1.set_positions()
         # self.Tree_1.inorder()
-        self.set_tree(self.Tree_1)
+        #self.set_tree(self.Tree_1)
         # self.list_nodes_inorder = "Orden: "
 
         # print(self.tree.inorder_list_current)
@@ -44,13 +47,16 @@ class AppDemo(QWidget):
 
         self.tiempo = 0
         self.timer = QTimer(self, interval=1000)
-        # self.timer.timeout.connect(self.update_draw)
+        self.timer.timeout.connect(self.update_draw)
+        #self.timer.start()
 
     def update_draw(self):
         self.update()
 
     def paintEvent(self, event):
         self.draw_tree()
+        
+        
 
     def draw_tree(self):
         bounce = QPainter(self)
@@ -68,11 +74,11 @@ class AppDemo(QWidget):
                 QRect(node.position[0]-20, node.position[1]-20, 40, 40))
             bounce.drawText(QRect(
                   node.position[0]-20, node.position[1]-20, 40, 40), Qt.AlignCenter, str(node.value))
-            if node.left is not None and node.left != self.Tree_1.NULL:
+            if node.left is not None and node.left != RBTree().NULL:
                 bounce.drawLine(
                 node.position[0], node.position[1], node.position[0] - 80, node.position[1] + 100)
                 self.draw_node(node.left, bounce)
-            if node.right is not None and node.right!= self.Tree_1.NULL:
+            if node.right is not None and node.right != RBTree().NULL:
                 bounce.drawLine(
                 node.position[0], node.position[1], node.position[0] + 80, node.position[1] + 100)
                 self.draw_node(node.right, bounce)
@@ -86,33 +92,41 @@ class MainWindow(QMainWindow):
         super(MainWindow, self).__init__()
         self.resize(1200, 800)
         self.setWindowTitle("Recorrido inorder")
-        self.GC = AppDemo()
+        #self.GC = AppDemo()
+        self.Tree_1 = RBTree()
+        self.Tree_1.GC.set_tree(self.Tree_1)
+        self.Tree_1.insertNode(10)
+        self.Tree_1.insertNode(20)
+        
+        self.Tree_1.insertNode(30)
+        
+        self.Tree_1.insertNode(5)
+        
 
-        self.GC.Tree_1.insertNode(10)
-        self.GC.Tree_1.insertNode(20)
-        self.GC.Tree_1.insertNode(30)
-        self.GC.Tree_1.insertNode(5)
-        self.GC.Tree_1.insertNode(4)
-        self.GC.Tree_1.insertNode(2)
-
+        self.Tree_1.insertNode(4)
+        
+        self.Tree_1.insertNode(2)
+        
         # print("\nAfter deleting an element")
     # self.GC.delete_node(2)
     # self.GC.print_tree()
 
     # self.GCinsertNode(15)
     # self.GCinsertNode(17)
-        self.GC.Tree_1.set_positions()
+        self.Tree_1.set_positions()
     # self.GCprint_tree()
     # print("\nAfter add an element")
     # print(bst.root)
     # print(bst.root.left)
         layout = QVBoxLayout()
-        layout.addWidget(self.GC)
+        layout.addWidget(self.Tree_1.GC)
         widget = QWidget()
         widget.setLayout(layout)
         self.setCentralWidget(widget)
 
 # Define R-B Tree
+
+
 
 
 class RBTree():
@@ -122,6 +136,7 @@ class RBTree():
         self.NULL.left = None
         self.NULL.right = None
         self.root = self.NULL
+        self.GC = AppDemo()
 
     def set_positions(self):
         self.root.position[0] = 500
@@ -134,10 +149,8 @@ class RBTree():
                 node.position[0] = node.parent.position[0]+((80*sentido) + 20*sentido)
                 node.position[1] = node.parent.position[1]+100
             if node.left is not None:
-                print("Tiene hijo left")
                 self.set_positions_node(node.left, -1)
             if node.right is not None:
-                print("Tiene hijo right")
                 self.set_positions_node(node.right, 1)
 
     # Insert New Node
@@ -174,6 +187,8 @@ class RBTree():
 
         if node.parent.parent == None:                  # If parent of node is Root Node
             return
+        self.GC.timer.start()
+        print("insertando: " + str(key))
 
         self.fixInsert(node)                          # Else call for Fix Up
 
