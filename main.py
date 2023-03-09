@@ -9,17 +9,18 @@ from PyQt5.QtGui import *
 import time
 
 trees_list = []
+trees_values_list = []
 
 
 # Define Node
 class Node():
-    def __init__(self, value):
+    def __init__(self, value,color = 1):
         self.value = value                                   # valueue of Node
         self.parent = None                               # Parent of Node
         self.left = None                                 # Left Child of Node
         self.right = None                                # Right Child of Node
         # Red Node as new node is always inserted as Red Node
-        self.color = 1
+        self.color = color
         self.position = [0,0]
 
     def __str__(self):
@@ -46,7 +47,7 @@ class AppDemo(QWidget):
         self.resize(1000, 700)
 
         self.tiempo = 0
-        self.timer = QTimer(self, interval=1000)
+        self.timer = QTimer(self, interval=2000)
         self.timer.timeout.connect(self.update_draw)
         #self.timer.start()
 
@@ -54,17 +55,32 @@ class AppDemo(QWidget):
         self.update()
 
     def paintEvent(self, event):
-        self.draw_tree()
+        if self.tiempo < len(trees_list):
+            print("animacion")
+            self.draw_tree(trees_list[self.tiempo])
+        else:
+            self.draw_tree(self.tree)
+
         
         
 
-    def draw_tree(self):
+    def draw_tree(self,tree):
+        global trees_list
         bounce = QPainter(self)
         bounce.setPen(Qt.black)
         bounce.setBrush(Qt.red)
-        self.draw_node(self.tree.root, bounce)
+        self. set_tree(tree)
+        self.draw_node(tree.root, bounce, tree)
+        if self.tiempo < len(trees_list):
+            print("Timer corriendo: " +str(self.tiempo))
+            self.tiempo+=1
+        else:
+            self.tiempo = 0
+            self.timer.stop()
+            #trees_list = []
+    
 
-    def draw_node(self, node, bounce):
+    def draw_node(self, node, bounce, tree):
         if node.color == 1:
             bounce.setBrush(Qt.red)
         else:
@@ -74,17 +90,25 @@ class AppDemo(QWidget):
                 QRect(node.position[0]-20, node.position[1]-20, 40, 40))
             bounce.drawText(QRect(
                   node.position[0]-20, node.position[1]-20, 40, 40), Qt.AlignCenter, str(node.value))
-            if node.left is not None and node.left != self.Tree_1.NULL:
+            if node.left is not None and node.left != tree.NULL:
                 bounce.drawLine(
                 node.position[0], node.position[1], node.position[0] - 80, node.position[1] + 100)
-                self.draw_node(node.left, bounce)
-            if node.right is not None and node.right != self.Tree_1.NULL:
+                self.draw_node(node.left, bounce,tree)
+            if node.right is not None and node.right != tree.NULL:
                 bounce.drawLine(
                 node.position[0], node.position[1], node.position[0] + 80, node.position[1] + 100)
-                self.draw_node(node.right, bounce)
+                self.draw_node(node.right, bounce,tree)
 
     def set_tree(self, tree):
         self.tree = tree
+
+    def generate_trees(self):
+        for i in trees_values_list:
+            new_tree = RBTree()
+            new_tree.fill_tree(i)
+            trees_list.append(new_tree)
+
+
 
 
 class MainWindow(QMainWindow):
@@ -102,12 +126,15 @@ class MainWindow(QMainWindow):
         
 
         self.GC.Tree_1.insertNode(4)
-        print(str(self.GC.Tree_1.read_values(self.GC.Tree_1.root,[])))
-        
+         
         self.GC.Tree_1.insertNode(2)
-
-        print(str(self.GC.Tree_1.read_values(self.GC.Tree_1.root,[])))
         
+        self.GC.Tree_1.insertNode(1)
+        
+        #self.GC.Tree_1.insertNode(-1)
+        print(len(trees_list))
+        for i in trees_values_list:
+            print(i)
         # print("\nAfter deleting an element")
     # self.GC.delete_node(2)
     # self.GC.print_tree()
@@ -144,10 +171,17 @@ class MainWindow(QMainWindow):
         botton_start.clicked.connect(self.read_list)
     
     def read_list(self):
+        global trees_values_list
+        global trees_list
+        trees_values_list = []
+        trees_list = []
         value = int(self.input_nodes_list.text())
-        self.GC.Tree_1.insertNode(value)
+        self.GC.Tree_1.insertNode(value, True)
         self.GC.Tree_1.set_positions()
-        self.GC.update_draw()
+        print(trees_values_list)
+        print(trees_values_list)
+        self.GC.generate_trees()
+        self.GC.timer.start()
 
 
 # Define R-B Tree
@@ -187,12 +221,41 @@ class RBTree():
                 self.read_values(node.right,values)
         return values
 
+    def fill_tree(self,values):
+        for i in values:
+            self.insert(i)
+        self.set_positions()
+
+    def insert(self,value):
+        if self.root == self.NULL or self.root is None:
+            self.root = Node(value[0],value[1])
+        else:
+            self.insertNode_Normal(self.root,value)
+    def insertNode_Normal(self,node,value):
+        if value[0] < node.value:
+            if node.left is None or node.left == self.NULL:
+                new_node = Node(value[0],value[1])
+                node.left = new_node
+                new_node.parent =  node
+            else:
+                self.insertNode_Normal(node.left,value)
+        else:
+            if node.right is None or node.right ==self.NULL:
+                new_node = Node(value[0],value[1])
+                node.right = new_node
+                new_node.parent = node
+            else:
+                self.insertNode_Normal(node.right,value)
+
+
+
+
 
 
 
     # Insert New Node
 
-    def insertNode(self, key):
+    def insertNode(self, key, option = False):
         node = Node(key)
         node.parent = None
         node.value = key
@@ -224,8 +287,9 @@ class RBTree():
 
         if node.parent.parent == None:                  # If parent of node is Root Node
             return
-
-        self.fixInsert(node)                          # Else call for Fix Up
+        if option:
+            trees_values_list.append(self.read_values(self.root,[]))
+        self.fixInsert(node, option)                          # Else call for Fix Up
 
     def minimum(self, node):
         while node.left != self.NULL:
@@ -272,7 +336,7 @@ class RBTree():
 
     # Fix Up Insertion
 
-    def fixInsert(self, k):
+    def fixInsert(self, k, option):
         while k.parent.color == 1:                        # While parent is red
             if k.parent == k.parent.parent.right:         # if parent is right child of its parent
                 u = k.parent.parent.left                  # Left child of grandparent
@@ -282,6 +346,8 @@ class RBTree():
                     k.parent.parent.color = 1             # Set grandparent node as Red
                     # Repeat the algo with Parent node to check conflicts
                     k = k.parent.parent
+                    if option:
+                        trees_values_list.append(self.read_values(self.root,[]))
                 else:
                     if k == k.parent.left:                # If k is left child of it's parent
                         k = k.parent
@@ -290,6 +356,8 @@ class RBTree():
                     k.parent.color = 0
                     k.parent.parent.color = 1
                     self.LR(k.parent.parent)
+                    if option:
+                        trees_values_list.append(self.read_values(self.root,[]))
             else:                                         # if parent is left child of its parent
                 u = k.parent.parent.right                 # Right child of grandparent
                 if u.color == 1:                          # if color of right child of grandparent i.e, uncle node is red
@@ -297,18 +365,26 @@ class RBTree():
                     k.parent.color = 0
                     k.parent.parent.color = 1             # set color of grandparent as Red
                     k = k.parent.parent                   # Repeat algo on grandparent to remove conflicts
+                    if option:
+                        trees_values_list.append(self.read_values(self.root,[]))
                 else:
                     if k == k.parent.right:               # if k is right child of its parent
                         k = k.parent
                         # Call left rotate on parent of k
                         self.LR(k)
+                        if option:
+                            trees_values_list.append(self.read_values(self.root,[]))
                     k.parent.color = 0
                     k.parent.parent.color = 1
                     # Call right rotate on grandparent
                     self.RR(k.parent.parent)
+                    if option:
+                        trees_values_list.append(self.read_values(self.root,[]))
             if k == self.root:                            # If k reaches root then break
                 break
         self.root.color = 0                               # Set color of root as black
+        if option:
+            trees_values_list.append(self.read_values(self.root,[]))
 
     # Function to fix issues after deletion
     def fixDelete(self, x):
