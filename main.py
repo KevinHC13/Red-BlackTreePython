@@ -102,8 +102,11 @@ class MainWindow(QMainWindow):
         
 
         self.GC.Tree_1.insertNode(4)
+        print(str(self.GC.Tree_1.read_values(self.GC.Tree_1.root,[])))
         
         self.GC.Tree_1.insertNode(2)
+
+        print(str(self.GC.Tree_1.read_values(self.GC.Tree_1.root,[])))
         
         # print("\nAfter deleting an element")
     # self.GC.delete_node(2)
@@ -174,6 +177,18 @@ class RBTree():
                 self.set_positions_node(node.left, -1)
             if node.right is not None:
                 self.set_positions_node(node.right, 1)
+
+    def read_values(self, node, values = []):
+        if node is not None and node != self.NULL:
+            values.append([node.value,node.color])
+            if node.left is not None and node.left != self.NULL:
+                self.read_values(node.left, values)
+            if node.right is not None and node.right != self.NULL:
+                self.read_values(node.right,values)
+        return values
+
+
+
 
     # Insert New Node
 
