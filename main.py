@@ -156,7 +156,7 @@ class MainWindow(QMainWindow):
         layout.addWidget(self.GC)
 
         # Campos donde se ingresaran los valores para crear cada nodo
-        lable_nodes_list = QLabel("Lista de enteros(separados por comas): ")
+        lable_nodes_list = QLabel("Ingrese un valor entero: ")
         self.input_nodes_list = QLineEdit() 
 		
 		# Creamos la expresión regular para permitir solo números enteros positivos y negativos
