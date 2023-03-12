@@ -127,7 +127,7 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
         self.resize(window_with, height)
-        self.setWindowTitle("Recorrido inorder")
+        self.setWindowTitle("Red Black Tree")
         # Crea una instancia de la clase AppDemo
         self.GC = AppDemo()
 
